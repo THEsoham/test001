@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sum Generator Multiplayer</title>
+</head>
+<body>
+  <h2>Sum Generator Multiplayer</h2>
+  <div id="game">
+    <input id="playerName" placeholder="Enter your name" />
+    <button onclick="joinGame()">Join Game</button>
+    <p id="numbers"></p>
+    <input type="number" id="answer" placeholder="Enter sum" />
+    <button onclick="submitAnswer()">Submit</button>
+    <h3>Scores:</h3>
+    <pre id="scores"></pre>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let num1, num2, playerName;
+
+    function joinGame() {
+      playerName = document.getElementById("playerName").value.trim();
+      if (playerName) {
+        socket.emit("joinGame", playerName);
+        generateNumbers();
+      }
+    }
+
+    function generateNumbers() {
+      num1 = Math.floor(Math.random() * 20) + 1;
+      num2 = Math.floor(Math.random() * 20) + 1;
+      document.getElementById("numbers").innerText = `${num1} + ${num2} = ?`;
+    }
+
+    function submitAnswer() {
+      const userAnswer = parseInt(document.getElementById("answer").value);
+      if (userAnswer === num1 + num2) {
+        socket.emit("correctAnswer", playerName);
+        generateNumbers();
+      }
+    }
+
+    socket.on("scoresUpdate", scores => {
+      document.getElementById("scores").innerText = JSON.stringify(scores, null, 2);
+    });
+  </script>
+</body>
+</html>
