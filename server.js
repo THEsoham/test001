@@ -1,33 +1,20 @@
+// Import dependencies
 const express = require("express");
+const path = require("path");
+
 const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http);
 
-const PORT = process.env.PORT || 3000;
+// Middleware to serve static files
+app.use(express.static(path.join(__dirname, "public")));
 
-// serve frontend
-app.use(express.static("public"));
-
-let scores = {}; // store scores by player name
-
-io.on("connection", socket => {
-  console.log("✅ A player connected:", socket.id);
-
-  socket.on("joinGame", name => {
-    scores[name] = 0;
-    io.emit("scoresUpdate", scores);
-  });
-
-  socket.on("correctAnswer", name => {
-    if (scores[name] !== undefined) {
-      scores[name]++;
-      io.emit("scoresUpdate", scores);
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("❌ A player disconnected");
-  });
+// Default route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-http.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// Use Render’s assigned port (or 3000 locally)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
